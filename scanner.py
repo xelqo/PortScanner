@@ -5,6 +5,7 @@ Usage: python scanner.py
 
 import socket
 import concurrent.futures
+import argparse
 
 # Common ports and their service names
 COMMON_PORTS = {
@@ -84,7 +85,7 @@ def scan_range(host: str, start: int, end: int) -> list:
             print(f"[OPEN] Port {port:<6} | {service:<15} | {banner[:40]}")
 
     return open_ports
-def Scan_range_threaded( host : str, start : int, end : int) -> list:
+def Scan_range_threaded(host : str, start : int, end : int) -> list:
     with concurrent.futures.ThreadPoolExecutor(max_workers = 5) as executor:
         results = list(executor.map(scan_port, [host] *(len(range(start, end+1))), range(start, end + 1)))
         combined = list(zip(results, range(start, end + 1)))
@@ -105,9 +106,12 @@ def print_summary(open_ports: list) -> None:
 
 # --- Hour 1 goal: get this running on localhost ---
 if __name__ == "__main__":
-    HOST = "127.0.0.1"  # localhost - always safe to scan
-    START_PORT = 1
-    END_PORT = 10000
-
-    results = Scan_range_threaded(HOST, START_PORT, END_PORT)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("host", help="the host device to scan ports") # localhost always safe
+    parser.add_argument("start", help="the starting number of file to scan", type = int)
+    parser.add_argument("end", help="The end number of file to scan", type = int)
+    args = parser.parse_args()
+    
+    results = Scan_range_threaded(args.host, args.start, args.end)
     print_summary(results)
+    
